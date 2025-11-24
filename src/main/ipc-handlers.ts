@@ -64,12 +64,7 @@ export function setupIpcHandlers() {
 
   // Fetch video formats
   ipcMain.handle('fetch-video-formats', async (_event, url: string) => {
-    try {
-      const formats = await downloadManager.fetchFormats(url);
-      return { success: true, formats };
-    } catch (error) {
-      return { success: false, error: (error as Error).message };
-    }
+    return await downloadManager.fetchFormats(url);
   });
 
   // Start download

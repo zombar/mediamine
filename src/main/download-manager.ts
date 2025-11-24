@@ -163,7 +163,20 @@ export class DownloadManager extends EventEmitter {
         'generic:impersonate',
       ]);
 
-      if (!info.formats) {
+      // If no formats array, create a single format from the video info
+      if (!info.formats || info.formats.length === 0) {
+        if (info.url) {
+          // Direct video URL - create a single format entry
+          return [{
+            format_id: info.format_id || '0',
+            ext: info.ext || 'mp4',
+            resolution: info.resolution || 'unknown',
+            filesize: info.filesize || info.filesize_approx,
+            format_note: info.format || 'direct',
+            vcodec: info.vcodec,
+            acodec: info.acodec,
+          }];
+        }
         return [];
       }
 

@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { FileSelector } from './components/FileSelector';
 import { VideoPlayer } from './components/VideoPlayer';
 import { UrlInput } from './components/UrlInput';
-import { QualitySelector } from './components/QualitySelector';
 import { DownloadProgress } from './components/DownloadProgress';
-import type { VideoFileData, DownloadProgress as DownloadProgressType, VideoFormat } from '../preload/preload.d';
+import type { VideoFileData, DownloadProgress as DownloadProgressType } from '../preload/preload.d';
 import './App.css';
 
 interface VideoMetadata {
@@ -21,11 +20,8 @@ function App() {
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
 
   // Download state
-  const [downloadUrl, setDownloadUrl] = useState('');
-  const [selectedFormat, setSelectedFormat] = useState('');
   const [downloadLocation, setDownloadLocation] = useState('');
   const [currentDownload, setCurrentDownload] = useState<DownloadProgressType | null>(null);
-  const [downloads, setDownloads] = useState<DownloadProgressType[]>([]);
   const [ytDlpInstalled, setYtDlpInstalled] = useState(true);
 
   useEffect(() => {
@@ -40,29 +36,27 @@ function App() {
     });
 
     // Set up download progress listeners
-    const cleanupProgress = window.electron.download.onProgress((id: string, progress: DownloadProgressType) => {
+    const cleanupProgress = window.electron.download.onProgress((_id: string, progress: DownloadProgressType) => {
       setCurrentDownload(progress);
-      setDownloads((prev) => {
-        const index = prev.findIndex((d) => d.id === id);
-        if (index >= 0) {
-          const updated = [...prev];
-          updated[index] = progress;
-          return updated;
-        }
-        return [...prev, progress];
-      });
     });
 
-    const cleanupComplete = window.electron.download.onComplete((id: string, _path: string) => {
-      setDownloads((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, status: 'completed' as const, progress: 100 } : d))
-      );
+    const cleanupComplete = window.electron.download.onComplete(async (_id: string, path: string) => {
+      // Auto-load the downloaded video
+      try {
+        const metadata = await window.electron.video.getMetadata(path);
+        const url = `file://${path}`;
+        setVideoData({
+          ...metadata,
+          url,
+        });
+        setCurrentDownload(null);
+      } catch (error) {
+        console.error('Failed to load downloaded video:', error);
+      }
     });
 
-    const cleanupError = window.electron.download.onError((id: string, error: string) => {
-      setDownloads((prev) =>
-        prev.map((d) => (d.id === id ? { ...d, status: 'error' as const, error } : d))
-      );
+    const cleanupError = window.electron.download.onError((_id: string, error: string) => {
+      setCurrentDownload((prev) => prev ? { ...prev, status: 'error' as const, error } : null);
     });
 
     return () => {
@@ -81,14 +75,6 @@ function App() {
     setMetadata(meta);
   };
 
-  const handleUrlValidated = (url: string, _source: string) => {
-    setDownloadUrl(url);
-  };
-
-  const handleQualitySelected = (format: string, _formatInfo: VideoFormat) => {
-    setSelectedFormat(format);
-  };
-
   const handleSelectDownloadLocation = async (): Promise<void> => {
     const location = await window.electron.download.selectLocation();
     if (location) {
@@ -96,23 +82,18 @@ function App() {
     }
   };
 
-  const handleStartDownload = async () => {
-    if (!downloadUrl || !selectedFormat || !downloadLocation) {
-      return;
-    }
-
-    const filename = `video_${Date.now()}.mp4`;
+  const handleStartDownload = async (url: string, format: string, filename: string) => {
     const result = await window.electron.download.start({
-      url: downloadUrl,
+      url,
       downloadPath: downloadLocation,
       filename,
-      format: selectedFormat,
+      format,
     });
 
     if (result.success && result.downloadId) {
       const progress: DownloadProgressType = {
         id: result.downloadId,
-        url: downloadUrl,
+        url,
         progress: 0,
         speed: 0,
         eta: 0,
@@ -120,7 +101,6 @@ function App() {
         filename,
       };
       setCurrentDownload(progress);
-      setDownloads([...downloads, progress]);
     }
   };
 
@@ -130,8 +110,23 @@ function App() {
     }
   };
 
-  const handlePlayDownloaded = () => {
-    // TODO: Load the downloaded video into the player
+  const handlePlayDownloaded = async () => {
+    if (!currentDownload || currentDownload.status !== 'completed') return;
+
+    // Get the full path from the download location and filename
+    const path = `${downloadLocation}/${currentDownload.filename}`;
+
+    try {
+      const metadata = await window.electron.video.getMetadata(path);
+      const url = `file://${path}`;
+      setVideoData({
+        ...metadata,
+        url,
+      });
+      setCurrentDownload(null);
+    } catch (error) {
+      console.error('Failed to load downloaded video:', error);
+    }
   };
 
   const formatDuration = (seconds: number) => {
@@ -194,38 +189,27 @@ function App() {
                     </ul>
                   </div>
                 )}
-                <UrlInput onUrlValidated={handleUrlValidated} />
 
-                {downloadUrl && (
-                  <QualitySelector url={downloadUrl} onQualitySelected={handleQualitySelected} />
-                )}
-
-                {downloadUrl && selectedFormat && (
-                  <div className="download-location-container">
-                    <label>Download Location:</label>
-                    <div className="location-selector">
-                      <span data-testid="download-location-display" className="location-path">
-                        {downloadLocation}
-                      </span>
-                      <button
-                        data-testid="select-download-location"
-                        onClick={handleSelectDownloadLocation}
-                      >
-                        Change
-                      </button>
-                    </div>
+                <div className="download-location-container">
+                  <label>Download Location:</label>
+                  <div className="location-selector">
+                    <span data-testid="download-location-display" className="location-path">
+                      {downloadLocation}
+                    </span>
+                    <button
+                      data-testid="select-download-location"
+                      onClick={handleSelectDownloadLocation}
+                    >
+                      Change
+                    </button>
                   </div>
-                )}
+                </div>
 
-                {downloadUrl && selectedFormat && !currentDownload && (
-                  <button
-                    data-testid="start-download-button"
-                    className="start-download-button"
-                    onClick={handleStartDownload}
-                  >
-                    Start Download
-                  </button>
-                )}
+                <UrlInput
+                  onDownloadStart={handleStartDownload}
+                  downloadLocation={downloadLocation}
+                  disabled={!!currentDownload}
+                />
 
                 {currentDownload && (
                   <DownloadProgress
@@ -238,18 +222,6 @@ function App() {
                     onCancel={handleCancelDownload}
                     onPlayDownloaded={handlePlayDownloaded}
                   />
-                )}
-
-                {downloads.length > 0 && (
-                  <div className="download-list" data-testid="download-list">
-                    <h3>Downloads</h3>
-                    {downloads.map((download) => (
-                      <div key={download.id} className="download-item" data-testid="download-item">
-                        <span>{download.filename || 'Unknown'}</span>
-                        <span data-testid="download-status">{download.status}</span>
-                      </div>
-                    ))}
-                  </div>
                 )}
               </div>
             )}

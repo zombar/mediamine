@@ -24,7 +24,7 @@
   border-color: #0066ff;
 }
 
-.validate-button {
+.download-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 600;
@@ -34,13 +34,14 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s;
+  min-width: 180px;
 }
 
-.validate-button:hover:not(:disabled) {
+.download-button:hover:not(:disabled) {
   background: #0052cc;
 }
 
-.validate-button:disabled {
+.download-button:disabled {
   background: #555;
   cursor: not-allowed;
 }

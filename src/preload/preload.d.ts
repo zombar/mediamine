@@ -25,6 +25,8 @@ export interface VideoFormat {
   resolution: string;
   filesize?: number;
   format_note?: string;
+  vcodec?: string;
+  acodec?: string;
 }
 
 export interface IElectronAPI {
@@ -42,7 +44,7 @@ export interface IElectronAPI {
     getDefaultLocation: () => Promise<string>;
     checkYtDlp: () => Promise<{ isInstalled: boolean }>;
     validateUrl: (url: string) => Promise<{ isValid: boolean; source: string | null }>;
-    fetchFormats: (url: string) => Promise<{ success: boolean; formats?: VideoFormat[]; error?: string }>;
+    fetchFormats: (url: string) => Promise<VideoFormat[]>;
     start: (options: { url: string; downloadPath: string; filename: string; format: string }) => Promise<{ success: boolean; downloadId?: string; error?: string }>;
     cancel: (id: string) => Promise<{ success: boolean }>;
     getStatus: (id: string) => Promise<DownloadProgress | null>;

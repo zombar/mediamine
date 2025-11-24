@@ -11,10 +11,10 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
-    height: 700,
+    height: 900,
     minWidth: 800,
-    minHeight: 600,
-    title: 'MediaMine Video Player',
+    minHeight: 700,
+    title: 'Vidmin Video Player',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.cjs'),
       contextIsolation: true,

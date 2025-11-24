@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+// Mock electron app module
+vi.mock('electron', () => ({
+  app: {
+    isPackaged: false,
+  },
+}));
+
 // Mock yt-dlp-wrap before importing DownloadManager
 vi.mock('yt-dlp-wrap', () => {
   return {
