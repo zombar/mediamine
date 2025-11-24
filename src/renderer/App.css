@@ -1,0 +1,30 @@
+.app {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.app-header {
+  padding: 1rem 2rem;
+  background: #2a2a2a;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.main-container {
+  flex: 1;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
