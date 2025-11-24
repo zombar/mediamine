@@ -75,7 +75,10 @@ test.describe('Development Environment', () => {
   test('should have DevTools available in development mode', async () => {
     const app = await electron.launch({
       ...getLaunchOptions(),
-      env: { NODE_ENV: 'development' },
+      env: {
+        ...process.env,
+        NODE_ENV: 'development'
+      },
     });
 
     const window = await app.firstWindow();
