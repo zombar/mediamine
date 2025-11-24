@@ -70,3 +70,8 @@ test-output.log
 
 # Hotnote
 .session_properties.HN
+
+# Downloaded yt-dlp binaries
+resources/mac/yt-dlp
+resources/win/yt-dlp.exe
+resources/linux/yt-dlp

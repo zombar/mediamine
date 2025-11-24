@@ -1,12 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ipcMain } from 'electron';
-import { setupIpcHandlers } from './ipc-handlers';
+
+// Mock yt-dlp-wrap before importing modules that depend on it
+vi.mock('yt-dlp-wrap', () => {
+  return {
+    default: class MockYTDlpWrap {
+      async getVideoInfo() {
+        return { formats: [] };
+      }
+      exec() {
+        return {
+          stdout: { on: vi.fn() },
+          on: vi.fn(),
+          kill: vi.fn(),
+        };
+      }
+    },
+  };
+});
 
 vi.mock('electron', () => ({
   ipcMain: {
     handle: vi.fn(),
   },
+  dialog: {
+    showOpenDialog: vi.fn(),
+  },
+  app: {
+    getPath: vi.fn().mockReturnValue('/default/path'),
+  },
 }));
+
+import { setupIpcHandlers } from './ipc-handlers';
 
 describe('IPC Handlers', () => {
   beforeEach(() => {

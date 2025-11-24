@@ -1,0 +1,72 @@
+.url-input-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.url-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.url-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #444;
+  border-radius: 8px;
+  background: #2a2a2a;
+  color: white;
+}
+
+.url-input:focus {
+  outline: none;
+  border-color: #0066ff;
+}
+
+.validate-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.validate-button:hover:not(:disabled) {
+  background: #0052cc;
+}
+
+.validate-button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.url-status {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.url-status.valid {
+  background: #1a4d2e;
+  color: #4ade80;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.url-status.error {
+  background: #4d1a1a;
+  color: #f87171;
+}
+
+.source-type {
+  margin-left: auto;
+  font-weight: 600;
+  text-transform: capitalize;
+}

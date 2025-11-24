@@ -10,6 +10,24 @@ beforeAll(() => {
       on: vi.fn(),
       removeListener: vi.fn(),
     },
+    video: {
+      selectFile: vi.fn(),
+      getMetadata: vi.fn(),
+    },
+    download: {
+      selectLocation: vi.fn(),
+      getDefaultLocation: vi.fn().mockResolvedValue('/default/downloads'),
+      checkYtDlp: vi.fn().mockResolvedValue({ isInstalled: true }),
+      validateUrl: vi.fn(),
+      fetchFormats: vi.fn(),
+      start: vi.fn(),
+      cancel: vi.fn(),
+      getStatus: vi.fn(),
+      getAll: vi.fn(),
+      onProgress: vi.fn(() => () => {}),
+      onComplete: vi.fn(() => () => {}),
+      onError: vi.fn(() => () => {}),
+    },
   };
 });
 
@@ -29,8 +47,9 @@ describe('App Component', () => {
     expect(screen.getByTestId('main-container')).toBeInTheDocument();
   });
 
-  it('should display welcome message', () => {
+  it('should display mode selector', () => {
     render(<App />);
-    expect(screen.getByText(/Welcome to Vidmin/i)).toBeInTheDocument();
+    expect(screen.getByText(/Local File/i)).toBeInTheDocument();
+    expect(screen.getByText(/Download/i)).toBeInTheDocument();
   });
 });

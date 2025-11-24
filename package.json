@@ -5,6 +5,7 @@
   "main": "dist/main/main.js",
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/download-binaries.js",
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .",
@@ -36,7 +37,9 @@
     "electron-store": "^8.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "uuid": "^13.0.0",
     "vidstack": "^1.12.13",
+    "yt-dlp-wrap": "^2.3.12",
     "zustand": "^4.5.0"
   },
   "lint-staged": {
@@ -57,13 +60,24 @@
       "dist/**/*",
       "package.json"
     ],
+    "extraResources": [
+      {
+        "from": "resources/${os}",
+        "to": "bin",
+        "filter": ["**/*"]
+      }
+    ],
+    "afterPack": "./scripts/afterpack.js",
     "mac": {
       "category": "public.app-category.video",
       "target": [
         "dmg",
         "zip"
       ],
-      "icon": "build/icon.icns"
+      "icon": "build/icon.icns",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "hardenedRuntime": true
     },
     "win": {
       "target": [
@@ -89,6 +103,7 @@
     "@types/node": "^20.11.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.47.0",
     "@typescript-eslint/parser": "^8.47.0",
     "@vitejs/plugin-react": "^4.2.1",
