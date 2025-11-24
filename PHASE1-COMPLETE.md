@@ -83,7 +83,7 @@ make clean      # Clean build artifacts
 ## Project Structure
 
 ```
-mediamine/
+vidmin/
 ├── Makefile                    # Build commands
 ├── package.json                # Dependencies & scripts
 ├── tsconfig.json              # TypeScript config

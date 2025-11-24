@@ -25,7 +25,7 @@ test.describe('Application Launch', () => {
     const window = await app.firstWindow();
 
     const title = await window.title();
-    expect(title).toBe('MediaMine Video Player');
+    expect(title).toBe('Vidmin Video Player');
 
     await app.close();
   });
@@ -65,7 +65,7 @@ test.describe('Application Launch', () => {
 
     const header = await window.locator('[data-testid="app-header"]');
     await expect(header).toBeVisible();
-    await expect(header).toContainText('MediaMine');
+    await expect(header).toContainText('Vidmin');
 
     await app.close();
   });

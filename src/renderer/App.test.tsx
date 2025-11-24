@@ -21,7 +21,7 @@ describe('App Component', () => {
 
   it('should display application name', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: /MediaMine/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Vidmin/i })).toBeInTheDocument();
   });
 
   it('should render main container', () => {
@@ -31,6 +31,6 @@ describe('App Component', () => {
 
   it('should display welcome message', () => {
     render(<App />);
-    expect(screen.getByText(/Welcome to MediaMine/i)).toBeInTheDocument();
+    expect(screen.getByText(/Welcome to Vidmin/i)).toBeInTheDocument();
   });
 });

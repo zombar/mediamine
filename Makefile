@@ -1,10 +1,10 @@
-# MediaMine Video Player - Makefile
+# Vidmin Video Player - Makefile
 
 .PHONY: help install dev build package test test-e2e test-unit clean
 
 # Default target
 help:
-	@echo "MediaMine Video Player - Available Commands:"
+	@echo "Vidmin Video Player - Available Commands:"
 	@echo ""
 	@echo "  make install    - Install all dependencies"
 	@echo "  make dev        - Run development server with Electron"

@@ -14,10 +14,10 @@ function App() {
   return (
     <div className="app">
       <header data-testid="app-header" className="app-header">
-        <h1>MediaMine Video Player</h1>
+        <h1>Vidmin Video Player</h1>
       </header>
       <main data-testid="main-container" className="main-container">
-        <p>Welcome to MediaMine - Your Advanced Video Player</p>
+        <p>Welcome to Vidmin - Your Advanced Video Player</p>
         {pingResult && <p data-testid="ipc-test">IPC Test: {pingResult}</p>}
       </main>
     </div>

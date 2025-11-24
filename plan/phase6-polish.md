@@ -197,8 +197,8 @@ performance.measure('download', 'download-start', 'download-end');
 ```json
 {
   "build": {
-    "appId": "com.mediamine.app",
-    "productName": "MediaMine",
+    "appId": "com.vidmin.app",
+    "productName": "Vidmin",
     "mac": {
       "category": "public.app-category.video",
       "target": ["dmg", "zip"]
@@ -384,7 +384,7 @@ Post-release:
 
 ## Conclusion
 
-Upon completion of Phase 6, MediaMine Video Player will be a production-ready application with:
+Upon completion of Phase 6, Vidmin Video Player will be a production-ready application with:
 -  Full test coverage with TDD methodology
 -  Robust error handling and recovery
 -  Excellent performance and stability

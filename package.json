@@ -1,5 +1,5 @@
 {
-  "name": "mediamine",
+  "name": "vidmin",
   "version": "0.1.0",
   "description": "Advanced video player with progressive download support",
   "main": "dist/main/main.js",
@@ -46,8 +46,8 @@
     ]
   },
   "build": {
-    "appId": "com.mediamine.app",
-    "productName": "MediaMine",
+    "appId": "com.vidmin.app",
+    "productName": "Vidmin",
     "directories": {
       "output": "release"
     },

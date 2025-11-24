@@ -47,7 +47,7 @@ test.describe('Application Launch', () => {
     const window = await app.firstWindow();
 
     const title = await window.title();
-    expect(title).toBe('MediaMine Video Player');
+    expect(title).toBe('Vidmin Video Player');
 
     await app.close();
   });
@@ -83,7 +83,7 @@ test.describe('Application Launch', () => {
 
     const header = await window.locator('[data-testid="app-header"]');
     await expect(header).toBeVisible();
-    await expect(header).toContainText('MediaMine');
+    await expect(header).toContainText('Vidmin');
 
     await app.close();
   });
@@ -156,7 +156,7 @@ describe('App Component', () => {
 
   it('should display application name', () => {
     render(<App />);
-    expect(screen.getByText(/MediaMine/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vidmin/i)).toBeInTheDocument();
   });
 
   it('should render main container', () => {
@@ -207,8 +207,8 @@ describe('IPC Handlers', () => {
 
 ```bash
 # Create project directory (if not exists)
-mkdir -p mediamine
-cd mediamine
+mkdir -p vidmin
+cd vidmin
 
 # Initialize package.json
 npm init -y
@@ -359,7 +359,7 @@ function createWindow() {
     height: 700,
     minWidth: 800,
     minHeight: 600,
-    title: 'MediaMine Video Player',
+    title: 'Vidmin Video Player',
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),
       contextIsolation: true,
@@ -475,10 +475,10 @@ function App() {
   return (
     <div className="app">
       <header data-testid="app-header" className="app-header">
-        <h1>MediaMine Video Player</h1>
+        <h1>Vidmin Video Player</h1>
       </header>
       <main data-testid="main-container" className="main-container">
-        <p>Welcome to MediaMine - Your Advanced Video Player</p>
+        <p>Welcome to Vidmin - Your Advanced Video Player</p>
         {pingResult && <p data-testid="ipc-test">IPC Test: {pingResult}</p>}
       </main>
     </div>
@@ -570,7 +570,7 @@ Create `index.html`:
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'">
-    <title>MediaMine Video Player</title>
+    <title>Vidmin Video Player</title>
   </head>
   <body>
     <div id="root"></div>
@@ -645,7 +645,7 @@ buildPreload().catch(console.error);
 
 ```json
 {
-  "name": "mediamine",
+  "name": "vidmin",
   "version": "0.1.0",
   "description": "Advanced video player with progressive download support",
   "main": "dist/main/main.js",
