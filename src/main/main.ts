@@ -9,6 +9,11 @@ const __dirname = path.dirname(__filename);
 
 let mainWindow: BrowserWindow | null = null;
 
+// Export function to get main window
+export function getMainWindow(): BrowserWindow | null {
+  return mainWindow;
+}
+
 // Register custom protocol scheme before app is ready
 protocol.registerSchemesAsPrivileged([
   {

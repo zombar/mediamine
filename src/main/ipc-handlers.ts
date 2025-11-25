@@ -1,6 +1,7 @@
-import { ipcMain, dialog, app } from 'electron';
+import { ipcMain, dialog, app, screen } from 'electron';
 import { selectVideoFile, getVideoMetadata, getVideoFileUrl } from './file-manager';
 import { downloadManager } from './download-manager';
+import { getMainWindow } from './main';
 import path from 'path';
 import fs from 'fs/promises';
 
@@ -128,5 +129,50 @@ export function setupIpcHandlers() {
   ipcMain.handle('write-file', async (_event, filePath: string, data: Uint8Array) => {
     // eslint-disable-next-line no-undef
     await fs.writeFile(filePath, Buffer.from(data));
+  });
+
+  // Window resizing based on video dimensions
+  ipcMain.handle('resize-window-to-video', async (_event, width: number, height: number) => {
+    const mainWindow = getMainWindow();
+    if (!mainWindow) return;
+
+    // Get current display
+    const currentDisplay = screen.getDisplayNearestPoint(mainWindow.getBounds());
+    const { workArea } = currentDisplay;
+
+    // Calculate maximum allowed dimensions (80% of work area)
+    const maxWidth = Math.floor(workArea.width * 0.8);
+    const maxHeight = Math.floor(workArea.height * 0.8);
+
+    // Calculate aspect ratio
+    const aspectRatio = width / height;
+
+    // Scale down if needed while maintaining aspect ratio
+    let targetWidth = width;
+    let targetHeight = height;
+
+    if (targetWidth > maxWidth) {
+      targetWidth = maxWidth;
+      targetHeight = Math.floor(targetWidth / aspectRatio);
+    }
+
+    if (targetHeight > maxHeight) {
+      targetHeight = maxHeight;
+      targetWidth = Math.floor(targetHeight * aspectRatio);
+    }
+
+    // Set minimum dimensions
+    const minWidth = 800;
+    const minHeight = 600;
+
+    targetWidth = Math.max(targetWidth, minWidth);
+    targetHeight = Math.max(targetHeight, minHeight);
+
+    // Set aspect ratio for the window to maintain on resize
+    mainWindow.setAspectRatio(aspectRatio);
+
+    // Resize and center the window
+    mainWindow.setSize(targetWidth, targetHeight, true);
+    mainWindow.center();
   });
 }

@@ -128,6 +128,8 @@ function App() {
 
   const handleMetadataLoad = (meta: VideoMetadata) => {
     setMetadata(meta);
+    // Resize window to match video dimensions
+    window.electron.video.resizeWindowToVideo(meta.width, meta.height);
   };
 
   const handleVideoLoadError = () => {
@@ -309,9 +311,6 @@ function App() {
           </div>
         </div>
       )}
-
-      {/* Draggable window area */}
-      <div className="window-drag-area" />
 
       <div className="video-container">
         {videoData ? (

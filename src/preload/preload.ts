@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld('electron', {
   video: {
     selectFile: () => ipcRenderer.invoke('select-video-file') as Promise<VideoFileData | null>,
     getMetadata: (path: string) => ipcRenderer.invoke('get-video-metadata', path),
+    resizeWindowToVideo: (width: number, height: number) => ipcRenderer.invoke('resize-window-to-video', width, height) as Promise<void>,
   },
   file: {
     writeFile: (path: string, data: Uint8Array) => ipcRenderer.invoke('write-file', path, data) as Promise<void>,

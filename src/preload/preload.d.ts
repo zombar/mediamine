@@ -38,6 +38,7 @@ export interface IElectronAPI {
   video: {
     selectFile: () => Promise<VideoFileData | null>;
     getMetadata: (path: string) => Promise<VideoFileData>;
+    resizeWindowToVideo: (width: number, height: number) => Promise<void>;
   };
   file: {
     writeFile: (path: string, data: Uint8Array) => Promise<void>;

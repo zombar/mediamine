@@ -108,6 +108,9 @@ export function VideoPlayer({ videoUrl, filename, onMetadataLoad, onLoadError }:
 
   return (
     <div className="video-player-container" data-testid="video-player" ref={playerRef}>
+      {/* Draggable area at the top */}
+      <div className="video-drag-area" />
+
       <MediaPlayer
         src={videoUrl}
         autoplay={true}
