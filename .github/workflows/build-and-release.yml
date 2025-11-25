@@ -52,13 +52,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: List release files for debugging
+        run: ls -R release/
+
       - name: Upload Release Assets (Linux)
         if: matrix.platform == 'linux'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release/*.AppImage
-            release/*.deb
+          files: release/*.{AppImage,deb,rpm}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -66,9 +67,7 @@ jobs:
         if: matrix.platform == 'mac'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release/*.dmg
-            release/*.zip
+          files: release/*.{dmg,zip,pkg}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,7 +75,6 @@ jobs:
         if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release/*.exe
+          files: release/*.{exe,msi}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
