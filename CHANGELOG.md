@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.4](https://github.com/zombar/vidmin/compare/vidmin-v0.1.3...vidmin-v0.1.4) (2025-11-25)
+
+
+### Bug Fixes
+
+* add author email and proper icons for Windows/Linux builds ([11de247](https://github.com/zombar/vidmin/commit/11de24755c06131ccac685c0fb154c00aa6fb4f3))
+* add proper Windows .ico with 256x256 size and Linux icon.png ([4a7b1fb](https://github.com/zombar/vidmin/commit/4a7b1fb74acb21dc0fc73debedcd4a11c23baabf))
+
 ## [0.1.3](https://github.com/zombar/vidmin/compare/vidmin-v0.1.2...vidmin-v0.1.3) (2025-11-25)
 
 
