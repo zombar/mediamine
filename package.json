@@ -30,7 +30,10 @@
     "typescript",
     "video-player"
   ],
-  "author": "",
+  "author": {
+    "name": "Vidmin Team",
+    "email": "vidmin@users.noreply.github.com"
+  },
   "license": "MIT",
   "dependencies": {
     "@emotion/react": "^11.14.0",
