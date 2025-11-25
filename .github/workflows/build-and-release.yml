@@ -3,6 +3,11 @@ name: Build and Release
 on:
   release:
     types: [published]
+  workflow_call:
+    inputs:
+      tag_name:
+        required: true
+        type: string
 
 jobs:
   build:
@@ -59,6 +64,7 @@ jobs:
         if: matrix.platform == 'linux'
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: release/*.{AppImage,deb,rpm}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -67,6 +73,7 @@ jobs:
         if: matrix.platform == 'mac'
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: release/*.{dmg,zip,pkg}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -75,6 +82,7 @@ jobs:
         if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ inputs.tag_name || github.ref_name }}
           files: release/*.{exe,msi}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
