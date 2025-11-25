@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.3](https://github.com/zombar/vidmin/compare/vidmin-v0.1.2...vidmin-v0.1.3) (2025-11-25)
+
+
+### Bug Fixes
+
+* add author email for Linux .deb package maintainer ([72b6738](https://github.com/zombar/vidmin/commit/72b67386654178d750e2c4b80207db00de70a471))
+* add author email for Linux .deb package maintainer ([78ebe20](https://github.com/zombar/vidmin/commit/78ebe208feee9e41fd5f989684dd92ff5df450a4))
+
 ## [0.1.2](https://github.com/zombar/vidmin/compare/vidmin-v0.1.1...vidmin-v0.1.2) (2025-11-25)
 
 
