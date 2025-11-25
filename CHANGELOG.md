@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5](https://github.com/zombar/vidmin/compare/vidmin-v0.1.4...vidmin-v0.1.5) (2025-11-25)
+
+
+### Bug Fixes
+
+* use multiline file patterns for release asset uploads ([88ed05b](https://github.com/zombar/vidmin/commit/88ed05bc357907bf3fb020940ee3e3c14bcfde34))
+* use multiline file patterns for release asset uploads ([a63a565](https://github.com/zombar/vidmin/commit/a63a56525c6a95e2ce5d5f246971076a9716121b))
+
 ## [0.1.4](https://github.com/zombar/vidmin/compare/vidmin-v0.1.3...vidmin-v0.1.4) (2025-11-25)
 
 
