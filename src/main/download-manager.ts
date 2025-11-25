@@ -224,7 +224,7 @@ export class DownloadManager extends EventEmitter {
         '--newline',
         '--no-playlist',
         '--extractor-args',
-        'generic:impersonate',
+        'generic:impersonate;youtube:player_client=default',
       ];
 
       // Add cookies-from-browser if specified
