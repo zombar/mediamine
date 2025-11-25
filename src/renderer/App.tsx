@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { FileSelector } from './components/FileSelector';
 import { VideoPlayer } from './components/VideoPlayer';
-import { UrlInput } from './components/UrlInput';
-import { DownloadProgress } from './components/DownloadProgress';
-import { ConversionDialog } from './components/ConversionDialog';
+import { ProgressModal } from './components/ProgressModal';
+import { DownloadUrlModal } from './components/DownloadUrlModal';
+import { FloatingActionButtons } from './components/FloatingActionButtons';
+import { MetadataOverlay } from './components/MetadataOverlay';
 import { conversionManager } from './conversion-manager';
-import type { VideoFileData, DownloadProgress as DownloadProgressType } from '../preload/preload.d';
+import type { DownloadProgress as DownloadProgressType } from '../preload/preload.d';
 import './App.css';
 
 interface VideoMetadata {
@@ -14,17 +14,13 @@ interface VideoMetadata {
   height: number;
 }
 
-type Mode = 'local' | 'download';
-
 function App() {
-  const [mode, setMode] = useState<Mode>('local');
   const [videoData, setVideoData] = useState<any>(null);
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
 
   // Download state
   const [downloadLocation, setDownloadLocation] = useState('');
   const [currentDownload, setCurrentDownload] = useState<DownloadProgressType | null>(null);
-  const [ytDlpInstalled, setYtDlpInstalled] = useState(true);
 
   // Conversion state
   const [showConversionDialog, setShowConversionDialog] = useState(false);
@@ -34,12 +30,21 @@ function App() {
   const [conversionStatus, setConversionStatus] = useState<'idle' | 'loading' | 'converting' | 'error'>('idle');
   const [conversionError, setConversionError] = useState('');
 
-  useEffect(() => {
-    // Check if yt-dlp is installed
-    window.electron.download.checkYtDlp().then(({ isInstalled }: { isInstalled: boolean }) => {
-      setYtDlpInstalled(isInstalled);
-    });
+  // Progress modal state
+  const [isProgressModalMinimized, setIsProgressModalMinimized] = useState(false);
 
+  // Download URL modal state
+  const [showDownloadUrlModal, setShowDownloadUrlModal] = useState(false);
+  const [downloadUrlInitial, setDownloadUrlInitial] = useState('');
+
+  // Drag & drop state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragType, setDragType] = useState<'file' | 'url' | null>(null);
+
+  // Metadata overlay state
+  const [showMetadata, setShowMetadata] = useState(false);
+
+  useEffect(() => {
     // Get default download location
     window.electron.download.getDefaultLocation().then((location: string) => {
       setDownloadLocation(location);
@@ -93,85 +98,36 @@ function App() {
     };
   }, []);
 
-  const handleFileSelected = (fileData: VideoFileData | null) => {
-    if (!fileData) {
-      setVideoData(null);
-      setMetadata(null);
-      return;
-    }
+  const handleFileSelected = async () => {
+    try {
+      const fileData = await window.electron.video.selectFile();
+      if (!fileData) {
+        setVideoData(null);
+        setMetadata(null);
+        return;
+      }
 
-    // Check if the file format needs conversion
-    if (conversionManager.needsConversion(fileData.format)) {
-      // eslint-disable-next-line no-console
-      console.log('[App] File needs conversion:', fileData.format);
-      setConversionVideoPath(fileData.path);
-      setConversionFormat(fileData.format);
-      setShowConversionDialog(true);
-    } else {
-      // Format is compatible, load directly
-      // eslint-disable-next-line no-console
-      console.log('[App] File can play directly:', fileData.format);
-      setVideoData(fileData);
-      setMetadata(null);
+      // Check if the file format needs conversion
+      if (conversionManager.needsConversion(fileData.format)) {
+        // eslint-disable-next-line no-console
+        console.log('[App] File needs conversion:', fileData.format);
+        setConversionVideoPath(fileData.path);
+        setConversionFormat(fileData.format);
+        setShowConversionDialog(true);
+      } else {
+        // Format is compatible, load directly
+        // eslint-disable-next-line no-console
+        console.log('[App] File can play directly:', fileData.format);
+        setVideoData(fileData);
+        setMetadata(null);
+      }
+    } catch (error) {
+      console.error('Failed to select file:', error);
     }
   };
 
   const handleMetadataLoad = (meta: VideoMetadata) => {
     setMetadata(meta);
-  };
-
-  const handleSelectDownloadLocation = async (): Promise<void> => {
-    const location = await window.electron.download.selectLocation();
-    if (location) {
-      setDownloadLocation(location);
-    }
-  };
-
-  const handleStartDownload = async (url: string, format: string, filename: string) => {
-    const result = await window.electron.download.start({
-      url,
-      downloadPath: downloadLocation,
-      filename,
-      format,
-    });
-
-    if (result.success && result.downloadId) {
-      const progress: DownloadProgressType = {
-        id: result.downloadId,
-        url,
-        progress: 0,
-        speed: 0,
-        eta: 0,
-        status: 'pending',
-        filename,
-      };
-      setCurrentDownload(progress);
-    }
-  };
-
-  const handleCancelDownload = async () => {
-    if (currentDownload) {
-      await window.electron.download.cancel(currentDownload.id);
-    }
-  };
-
-  const handlePlayDownloaded = async () => {
-    if (!currentDownload || currentDownload.status !== 'completed') return;
-
-    // Get the full path from the download location and filename
-    const path = `${downloadLocation}/${currentDownload.filename}`;
-
-    try {
-      const metadata = await window.electron.video.getMetadata(path);
-      const url = `vidmin:${path}`;
-      setVideoData({
-        ...metadata,
-        url,
-      });
-      setCurrentDownload(null);
-    } catch (error) {
-      console.error('Failed to load downloaded video:', error);
-    }
   };
 
   const handleConvert = async (outputFormat: 'mp4' | 'webm', quality: 'high' | 'medium' | 'low') => {
@@ -229,151 +185,213 @@ function App() {
     setConversionError('');
   };
 
-  const formatDuration = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const handleDownloadUrl = (url: string, formatId: string, cookiesFromBrowser?: string) => {
+    // Generate filename from URL
+    const timestamp = Date.now();
+    const filename = `video_${timestamp}.mp4`;
+
+    // Start download
+    window.electron.download.start({
+      url,
+      downloadPath: downloadLocation,
+      filename,
+      format: formatId,
+      cookiesFromBrowser,
+    });
+    setShowDownloadUrlModal(false);
+    setDownloadUrlInitial('');
   };
 
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(2)} MB`;
+  // Drag & drop handlers
+  // eslint-disable-next-line no-undef
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    setDragType(null);
+
+    // Check for files
+    if (e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      // In Electron, File objects have a path property
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const filePath = (file as any).path as string;
+
+      try {
+        const metadata = await window.electron.video.getMetadata(filePath);
+
+        // Check if format needs conversion
+        if (conversionManager.needsConversion(metadata.format)) {
+          setConversionVideoPath(filePath);
+          setConversionFormat(metadata.format);
+          setShowConversionDialog(true);
+        } else {
+          const url = `vidmin:${filePath}`;
+          setVideoData({
+            ...metadata,
+            url,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load dropped file:', error);
+      }
+    }
+    // Check for URL text
+    else {
+      const text = e.dataTransfer.getData('text/plain');
+      if (text && isValidUrl(text)) {
+        // Open download modal with URL pre-filled
+        setDownloadUrlInitial(text);
+        setShowDownloadUrlModal(true);
+      }
+    }
+  };
+
+  // eslint-disable-next-line no-undef
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+
+    // Detect drag type
+    const hasFiles = e.dataTransfer.types.includes('Files');
+    const hasText = e.dataTransfer.types.includes('text/plain');
+
+    setIsDragging(true);
+    setDragType(hasFiles ? 'file' : hasText ? 'url' : null);
+  };
+
+  // eslint-disable-next-line no-undef
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Only clear if leaving the entire app div
+    if (e.target === e.currentTarget) {
+      setIsDragging(false);
+      setDragType(null);
+    }
+  };
+
+  const isValidUrl = (string: string): boolean => {
+    try {
+      // eslint-disable-next-line no-undef
+      const url = new URL(string);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
   };
 
   return (
-    <div className="app">
-      <header data-testid="app-header" className="app-header">
-        <h1>Vidmin Video Player</h1>
-        {videoData && (
-          <button
-            onClick={() => setVideoData(null)}
-            className="change-file-button"
-            data-testid="change-file-button"
-          >
-            Change File
-          </button>
-        )}
-      </header>
-
-      {!videoData && (
-        <div className="mode-selector">
-          <button
-            className={`mode-button ${mode === 'local' ? 'active' : ''}`}
-            onClick={() => setMode('local')}
-          >
-            Local File
-          </button>
-          <button
-            className={`mode-button ${mode === 'download' ? 'active' : ''}`}
-            onClick={() => setMode('download')}
-          >
-            Download
-          </button>
+    <div
+      className="app"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+    >
+      {/* Drag & drop overlay */}
+      {isDragging && (
+        <div className="drag-drop-overlay">
+          <div className="drag-drop-content">
+            <div className="drag-drop-icon">
+              {dragType === 'file' ? '📁' : dragType === 'url' ? '🔗' : '?'}
+            </div>
+            <p>
+              Drop {dragType === 'file' ? 'video file' : dragType === 'url' ? 'URL' : 'here'} to {dragType === 'file' ? 'play' : 'download'}
+            </p>
+          </div>
         </div>
       )}
 
-      <main data-testid="main-container" className="main-container">
-        {!videoData ? (
-          <>
-            {mode === 'local' ? (
-              <FileSelector onFileSelected={handleFileSelected} />
-            ) : (
-              <div className="download-container">
-                {!ytDlpInstalled && (
-                  <div className="yt-dlp-warning" data-testid="yt-dlp-warning">
-                    <h3>yt-dlp is not installed</h3>
-                    <p>To download videos, you need to install yt-dlp:</p>
-                    <ul>
-                      <li>macOS/Linux: <code>brew install yt-dlp</code> or <code>pip install yt-dlp</code></li>
-                      <li>Windows: Download from <a href="https://github.com/yt-dlp/yt-dlp/releases" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                    </ul>
-                  </div>
-                )}
-
-                <div className="download-location-container">
-                  <label>Download Location:</label>
-                  <div className="location-selector">
-                    <span data-testid="download-location-display" className="location-path">
-                      {downloadLocation}
-                    </span>
-                    <button
-                      data-testid="select-download-location"
-                      onClick={handleSelectDownloadLocation}
-                    >
-                      Change
-                    </button>
-                  </div>
-                </div>
-
-                <UrlInput
-                  onDownloadStart={handleStartDownload}
-                  downloadLocation={downloadLocation}
-                  disabled={!!currentDownload}
-                />
-
-                {currentDownload && (
-                  <DownloadProgress
-                    progress={currentDownload.progress}
-                    speed={currentDownload.speed}
-                    eta={currentDownload.eta}
-                    status={currentDownload.status}
-                    filename={currentDownload.filename}
-                    error={currentDownload.error}
-                    onCancel={handleCancelDownload}
-                    onPlayDownloaded={handlePlayDownloaded}
-                  />
-                )}
-              </div>
-            )}
-          </>
-        ) : (
+      <div className="video-container">
+        {videoData ? (
           <>
             <VideoPlayer
               videoUrl={videoData.url}
               filename={videoData.filename}
               onMetadataLoad={handleMetadataLoad}
             />
-            {metadata && (
-              <div className="video-metadata" data-testid="video-metadata-panel">
-                <div className="metadata-item">
-                  <span className="metadata-label">Duration</span>
-                  <span className="metadata-value" data-testid="video-duration">
-                    {formatDuration(metadata.duration)}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Resolution</span>
-                  <span className="metadata-value" data-testid="video-resolution">
-                    {metadata.width} x {metadata.height}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Format</span>
-                  <span className="metadata-value" data-testid="video-format">
-                    {videoData.format.toUpperCase()}
-                  </span>
-                </div>
-                <div className="metadata-item">
-                  <span className="metadata-label">Size</span>
-                  <span className="metadata-value" data-testid="video-size">
-                    {formatFileSize(videoData.size)}
-                  </span>
-                </div>
-              </div>
+
+            <FloatingActionButtons
+              hasVideo={true}
+              onOpenFile={handleFileSelected}
+              onDownloadUrl={() => setShowDownloadUrlModal(true)}
+              onToggleMetadata={() => setShowMetadata(!showMetadata)}
+              onCloseVideo={() => setVideoData(null)}
+            />
+
+            {showMetadata && metadata && (
+              <MetadataOverlay
+                metadata={metadata}
+                videoData={videoData}
+                onClose={() => setShowMetadata(false)}
+              />
             )}
           </>
+        ) : (
+          <div className="empty-state">
+            <p>Drop a video file or URL here</p>
+            <FloatingActionButtons
+              hasVideo={false}
+              onOpenFile={handleFileSelected}
+              onDownloadUrl={() => setShowDownloadUrlModal(true)}
+            />
+          </div>
         )}
-      </main>
+      </div>
 
       {showConversionDialog && (
-        <ConversionDialog
+        <ProgressModal
+          mode="conversion"
+          isMinimized={isProgressModalMinimized}
+          onMinimize={() => setIsProgressModalMinimized(true)}
+          onMaximize={() => setIsProgressModalMinimized(false)}
+          onClose={handleCancelConversion}
+          onCancel={handleCancelConversion}
           inputPath={conversionVideoPath}
           inputFormat={conversionFormat}
+          conversionProgress={conversionProgress}
+          conversionStatus={conversionStatus}
+          conversionError={conversionError}
           onConvert={handleConvert}
-          onCancel={handleCancelConversion}
-          progress={conversionProgress}
-          status={conversionStatus}
-          error={conversionError}
+        />
+      )}
+
+      {currentDownload && (
+        <ProgressModal
+          mode="download"
+          isMinimized={isProgressModalMinimized}
+          onMinimize={() => setIsProgressModalMinimized(true)}
+          onMaximize={() => setIsProgressModalMinimized(false)}
+          onClose={() => setCurrentDownload(null)}
+          onCancel={() => {
+            // TODO: Implement download cancellation
+            setCurrentDownload(null);
+          }}
+          downloadProgress={currentDownload}
+          onPlayDownloaded={async () => {
+            // Load the downloaded video
+            if (currentDownload.filename) {
+              const path = `${downloadLocation}/${currentDownload.filename}`;
+              try {
+                const metadata = await window.electron.video.getMetadata(path);
+                const url = `vidmin:${path}`;
+                setVideoData({
+                  ...metadata,
+                  url,
+                });
+                setCurrentDownload(null);
+              } catch (error) {
+                console.error('Failed to load downloaded video:', error);
+              }
+            }
+          }}
+        />
+      )}
+
+      {showDownloadUrlModal && (
+        <DownloadUrlModal
+          onClose={() => {
+            setShowDownloadUrlModal(false);
+            setDownloadUrlInitial('');
+          }}
+          onDownload={handleDownloadUrl}
+          initialUrl={downloadUrlInitial}
         />
       )}
     </div>

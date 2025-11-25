@@ -104,7 +104,7 @@ export function VideoPlayer({ videoUrl, filename, onMetadataLoad }: VideoPlayerP
     <div className="video-player-container" data-testid="video-player" ref={playerRef}>
       <MediaPlayer
         src={videoUrl}
-        autoplay={false}
+        autoplay={true}
         className="video-player"
         onLoadedMetadata={handleLoadedMetadata}
         onError={handleError}

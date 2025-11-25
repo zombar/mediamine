@@ -48,7 +48,7 @@ export interface IElectronAPI {
     checkYtDlp: () => Promise<{ isInstalled: boolean }>;
     validateUrl: (url: string) => Promise<{ isValid: boolean; source: string | null }>;
     fetchFormats: (url: string) => Promise<VideoFormat[]>;
-    start: (options: { url: string; downloadPath: string; filename: string; format: string }) => Promise<{ success: boolean; downloadId?: string; error?: string }>;
+    start: (options: { url: string; downloadPath: string; filename: string; format: string; cookiesFromBrowser?: string }) => Promise<{ success: boolean; downloadId?: string; error?: string }>;
     cancel: (id: string) => Promise<{ success: boolean }>;
     getStatus: (id: string) => Promise<DownloadProgress | null>;
     getAll: () => Promise<DownloadProgress[]>;

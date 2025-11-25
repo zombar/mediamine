@@ -74,6 +74,7 @@ export function setupIpcHandlers() {
     downloadPath: string;
     filename: string;
     format: string;
+    cookiesFromBrowser?: string;
   }) => {
     const outputPath = path.join(options.downloadPath, options.filename);
 
@@ -82,6 +83,7 @@ export function setupIpcHandlers() {
         url: options.url,
         outputPath,
         format: options.format,
+        cookiesFromBrowser: options.cookiesFromBrowser,
         onProgress: (progress) => {
           if (!event.sender.isDestroyed()) {
             event.sender.send('download-progress', downloadId, progress);

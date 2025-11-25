@@ -33,23 +33,17 @@ beforeAll(() => {
 
 describe('App Component', () => {
   it('should render without crashing', () => {
-    render(<App />);
-    expect(screen.getByTestId('app-header')).toBeInTheDocument();
+    const { container } = render(<App />);
+    expect(container.querySelector('.app')).toBeInTheDocument();
   });
 
-  it('should display application name', () => {
+  it('should display empty state when no video loaded', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: /Vidmin/i })).toBeInTheDocument();
+    expect(screen.getByText(/Drop a video file or URL here/i)).toBeInTheDocument();
   });
 
-  it('should render main container', () => {
-    render(<App />);
-    expect(screen.getByTestId('main-container')).toBeInTheDocument();
-  });
-
-  it('should display mode selector', () => {
-    render(<App />);
-    expect(screen.getByText(/Local File/i)).toBeInTheDocument();
-    expect(screen.getByText(/Download/i)).toBeInTheDocument();
+  it('should render video container', () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('.video-container')).toBeInTheDocument();
   });
 });

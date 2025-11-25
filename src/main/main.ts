@@ -78,6 +78,9 @@ function createWindow() {
     minWidth: 800,
     minHeight: 700,
     title: 'Vidmin Video Player',
+    frame: false,
+    titleBarStyle: 'hiddenInset',
+    trafficLightPosition: { x: 16, y: 16 },
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.cjs'),
       contextIsolation: true,

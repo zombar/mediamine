@@ -25,6 +25,7 @@ function getBundledYtDlpPath(): string {
   if (app.isPackaged) {
     // Production: use bundled binary from app resources
     const binaryPath = path.join(process.resourcesPath, 'bin', binaryName);
+    // eslint-disable-next-line no-console
     console.log('[DownloadManager] Using packaged binary:', binaryPath);
     return binaryPath;
   } else {
@@ -37,6 +38,7 @@ function getBundledYtDlpPath(): string {
     };
     const platformDir = platformDirMap[platform] || platform;
     const binaryPath = path.join(__dirname, '../../resources', platformDir, binaryName);
+    // eslint-disable-next-line no-console
     console.log('[DownloadManager] Using development binary:', binaryPath);
     return binaryPath;
   }
@@ -46,6 +48,7 @@ export interface DownloadOptions {
   url: string;
   outputPath: string;
   format?: string;
+  cookiesFromBrowser?: string;
   onProgress?: (progress: DownloadProgress) => void;
   onComplete?: () => void;
   onError?: (error: Error) => void;
@@ -115,6 +118,7 @@ export class DownloadManager extends EventEmitter {
         }
       }
 
+      // eslint-disable-next-line no-console
       console.log('[DownloadManager] yt-dlp binary found and verified:', this.ytDlpPath);
       return true;
     } catch (error) {
@@ -222,6 +226,11 @@ export class DownloadManager extends EventEmitter {
         '--extractor-args',
         'generic:impersonate',
       ];
+
+      // Add cookies-from-browser if specified
+      if (options.cookiesFromBrowser && options.cookiesFromBrowser !== 'none') {
+        ytDlpArgs.push('--cookies-from-browser', options.cookiesFromBrowser);
+      }
 
       const ytDlp = await this.getYtDlp();
       const ytDlpEventEmitter = ytDlp.exec([options.url, ...ytDlpArgs]);
