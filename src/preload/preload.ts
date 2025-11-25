@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge, ipcRenderer, webUtils } from 'electron';
 
 interface VideoFileData {
   filename: string;
@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld('electron', {
   },
   file: {
     writeFile: (path: string, data: Uint8Array) => ipcRenderer.invoke('write-file', path, data) as Promise<void>,
+    // Get the real filesystem path for a File object (required for Electron 32+)
+    getPathForFile: (file: globalThis.File) => webUtils.getPathForFile(file),
   },
   download: {
     selectLocation: () => ipcRenderer.invoke('select-download-location') as Promise<string | null>,
