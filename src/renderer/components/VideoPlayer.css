@@ -27,7 +27,7 @@
 .video-info {
   position: absolute;
   top: 1rem;
-  left: 1rem;
+  left: 6rem; /* Position after traffic light buttons (84px + spacing) */
   background: rgba(0, 0, 0, 0.7);
   padding: 0.5rem 1rem;
   border-radius: 4px;

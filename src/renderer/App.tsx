@@ -310,6 +310,9 @@ function App() {
         </div>
       )}
 
+      {/* Draggable window area */}
+      <div className="window-drag-area" />
+
       <div className="video-container">
         {videoData ? (
           <>
