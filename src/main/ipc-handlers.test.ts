@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ipcMain } from 'electron';
 
+// Mock main module to prevent app initialization
+vi.mock('./main', () => ({
+  getMainWindow: vi.fn().mockReturnValue({
+    getBounds: vi.fn().mockReturnValue({ x: 0, y: 0, width: 800, height: 600 }),
+    setAspectRatio: vi.fn(),
+    setSize: vi.fn(),
+    center: vi.fn(),
+  }),
+}));
+
 // Mock yt-dlp-wrap before importing modules that depend on it
 vi.mock('yt-dlp-wrap', () => {
   return {
@@ -28,7 +38,22 @@ vi.mock('electron', () => ({
   },
   app: {
     getPath: vi.fn().mockReturnValue('/default/path'),
+    whenReady: vi.fn().mockResolvedValue(undefined),
   },
+  screen: {
+    getDisplayNearestPoint: vi.fn().mockReturnValue({
+      workArea: {
+        width: 1920,
+        height: 1080,
+      },
+    }),
+  },
+  protocol: {
+    registerSchemesAsPrivileged: vi.fn(),
+    registerFileProtocol: vi.fn(),
+    handle: vi.fn(),
+  },
+  BrowserWindow: vi.fn(),
 }));
 
 import { setupIpcHandlers } from './ipc-handlers';

@@ -55,7 +55,7 @@ test.describe('Application Launch', () => {
     await app.close();
   });
 
-  test('should display app header', async () => {
+  test('should display empty state message', async () => {
     const app = await electron.launch(getLaunchOptions());
     const window = await app.firstWindow();
 
@@ -63,9 +63,10 @@ test.describe('Application Launch', () => {
     await window.waitForLoadState('domcontentloaded');
     await window.waitForTimeout(2000);
 
-    const header = await window.locator('[data-testid="app-header"]');
-    await expect(header).toBeVisible();
-    await expect(header).toContainText('Vidmin');
+    // Phase 6 UI shows empty state instead of header
+    const emptyState = await window.locator('.empty-state');
+    await expect(emptyState).toBeVisible();
+    await expect(emptyState).toContainText(/drop.*video/i);
 
     await app.close();
   });

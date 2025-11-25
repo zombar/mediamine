@@ -7,20 +7,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 test.describe('Video Player - File Selection', () => {
-  test('should display file selection button', async () => {
+  test('should display floating action buttons', async () => {
     const app = await electron.launch({ args: ['.'] });
     const window = await app.firstWindow();
 
-    const selectButton = window.locator('[data-testid="select-file-button"]');
-    await expect(selectButton).toBeVisible();
-    await expect(selectButton).toContainText(/select.*file/i);
+    await window.waitForLoadState('domcontentloaded');
+    await window.waitForTimeout(2000);
+
+    // Phase 6 UI uses floating action buttons instead of inline button
+    const fabCentered = window.locator('[data-testid="fab-centered"]');
+    await expect(fabCentered).toBeVisible();
 
     await app.close();
   });
 
-  test('should open file dialog when button clicked', async () => {
+  test('should open file dialog when Open File FAB clicked', async () => {
     const app = await electron.launch({ args: ['.'] });
     const window = await app.firstWindow();
+
+    await window.waitForLoadState('domcontentloaded');
+    await window.waitForTimeout(2000);
 
     // Mock the dialog to prevent actual dialog from opening
     await app.evaluate(({ dialog }) => {
@@ -29,8 +35,9 @@ test.describe('Video Player - File Selection', () => {
       };
     });
 
-    const selectButton = window.locator('[data-testid="select-file-button"]');
-    await selectButton.click();
+    // Find and click the Open File FAB (folder icon)
+    const openFileFab = window.locator('.fab-container.centered button[aria-label*="Open"]').first();
+    await openFileFab.click();
 
     // Wait a bit for any state changes
     await window.waitForTimeout(500);
@@ -46,6 +53,9 @@ test.describe('Video Player - Playback Controls', () => {
     const app = await electron.launch({ args: ['.'] });
     const window = await app.firstWindow();
 
+    await window.waitForLoadState('domcontentloaded');
+    await window.waitForTimeout(2000);
+
     // Mock file selection
     await app.evaluate(({ dialog }, testPath) => {
       dialog.showOpenDialog = async () => {
@@ -53,8 +63,9 @@ test.describe('Video Player - Playback Controls', () => {
       };
     }, testVideoPath);
 
-    const selectButton = window.locator('[data-testid="select-file-button"]');
-    await selectButton.click();
+    // Click the Open File FAB
+    const openFileFab = window.locator('.fab-container.centered button[aria-label*="Open"]').first();
+    await openFileFab.click();
 
     // Wait for player to appear
     const player = window.locator('[data-testid="video-player"]');
@@ -102,22 +113,23 @@ test.describe('Video Player - Playback Controls', () => {
     await app.close();
   });
 
-  test('should display video duration and metadata', async () => {
+  test('should display video metadata in overlay', async () => {
     const app = await electron.launch({ args: ['.'] });
     const window = await app.firstWindow();
 
     await loadTestVideo(app, window, testVideoPath);
 
-    // Wait for metadata to load
+    // Wait for video to load
     await window.waitForTimeout(2000);
 
-    const metadataPanel = window.locator('[data-testid="video-metadata-panel"]');
-    await expect(metadataPanel).toBeVisible({ timeout: 5000 });
+    // Phase 6 UI shows metadata in the video info overlay
+    const metadata = window.locator('[data-testid="video-metadata"]');
+    await expect(metadata).toBeVisible({ timeout: 5000 });
 
     await app.close();
   });
 
-  test('should toggle between file selector and player', async () => {
+  test('should have close video button in FAB menu', async () => {
     const app = await electron.launch({ args: ['.'] });
     const window = await app.firstWindow();
 
@@ -126,13 +138,9 @@ test.describe('Video Player - Playback Controls', () => {
     const player = window.locator('[data-testid="video-player"]');
     await expect(player).toBeVisible();
 
-    // Click change file button
-    const changeButton = window.locator('[data-testid="change-file-button"]');
-    await changeButton.click();
-
-    // Should show file selector again
-    const fileSelector = window.locator('[data-testid="file-selector"]');
-    await expect(fileSelector).toBeVisible();
+    // Phase 6 UI has FAB menu with close button
+    const fabMenu = window.locator('[data-testid="fab-main-menu"]');
+    await expect(fabMenu).toBeVisible();
 
     await app.close();
   });
@@ -216,13 +224,17 @@ test.describe('Video Player - Keyboard Shortcuts', () => {
 
 // Helper function
 async function loadTestVideo(app: any, window: any, videoPath: string) {
+  await window.waitForLoadState('domcontentloaded');
+  await window.waitForTimeout(2000);
+
   await app.evaluate(({ dialog }, testPath) => {
     dialog.showOpenDialog = async () => {
       return { canceled: false, filePaths: [testPath] };
     };
   }, videoPath);
 
-  const selectButton = window.locator('[data-testid="select-file-button"]');
-  await selectButton.click();
+  // Click the Open File FAB in Phase 6 UI
+  const openFileFab = window.locator('.fab-container.centered button[aria-label*="Open"]').first();
+  await openFileFab.click();
   await window.waitForTimeout(1000);
 }
